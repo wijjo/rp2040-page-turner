@@ -1,0 +1,10 @@
+Adafruit-Blinka
+Adafruit-PlatformDetect
+Adafruit-PureIO
+adafruit-circuitpython-hid
+adafruit-circuitpython-neopixel
+adafruit-circuitpython-pixelbuf
+circuitpython-stubs
+pyftdi
+pyserial
+pyusb

@@ -3,11 +3,11 @@ Page Turner
 """
 
 from rp2040_util import (
-    Controller,
     Gadget,
     HIDKeyboard,
     Keycode,
     board,
+    gadget_main,
 )
 
 # Pins.
@@ -20,7 +20,7 @@ USB_DISK_LAMP_PIN = board.D8
 TAP_INPUT_PIN = board.A0
 
 # Parameters.
-PULSE_SECS = .02
+SLEEP_SECS = .02
 PULSE_LAMP_FLASH_SECS = .5
 STATUS_BRIGHTNESS = 0.1
 STATUS_COLOR_SINGLE_TAP = (255, 0, 0)
@@ -32,11 +32,11 @@ PGXX_LAMP_ON_SECS = 1.0
 class PageTurner(Gadget):
 
     def __init__(self, controller):
-        self.controller = controller
+        super().__init__(controller)
         self.pulse_lamp = self.controller.lamp(
             PULSE_LAMP_PIN,
-            on_secs=PULSE_SECS,
-            off_secs=PULSE_SECS,
+            on_secs=PULSE_LAMP_FLASH_SECS,
+            off_secs=PULSE_LAMP_FLASH_SECS,
         )
         self.status_lamp = self.controller.multicolor_lamp(
             STATUS_LAMP_PIN,
@@ -84,10 +84,4 @@ class PageTurner(Gadget):
                 self.status_lamp.turn_on()
 
 
-def main():
-    controller = Controller(PULSE_SECS)
-    gadget = PageTurner(controller)
-    controller.run(gadget)
-
-
-main()
+gadget_main(SLEEP_SECS, PageTurner)

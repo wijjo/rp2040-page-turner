@@ -24,12 +24,10 @@ TAP_CAPTURE_SECS = 0.5
 
 class Heartbeat:
 
-    def __init__(self, sleep_secs):
+    def __init__(self):
         self.time = time.monotonic()
-        self.sleep_secs = sleep_secs
 
     def tick(self):
-        time.sleep(self.sleep_secs)
         self.time = time.monotonic()
 
 
@@ -184,19 +182,10 @@ class HIDKeyboard:
             self.device.send(*keycodes)
 
 
-class Gadget:
-
-    def init(self):
-        raise NotImplementedError
-
-    def poll(self):
-        raise NotImplementedError
-
-
 class Controller:
 
-    def __init__(self, sleep_secs):
-        self.heartbeat = Heartbeat(sleep_secs)
+    def __init__(self, heartbeat):
+        self.heartbeat = heartbeat
         self.lamps = []
 
     def lamp(self, pin, on_secs=None, off_secs=None):
@@ -222,14 +211,31 @@ class Controller:
     def tap_input(self, pin):
         return TapInput(pin, self.heartbeat)
 
-    def run(self, gadget):
-        gadget.init()
-        while True:
-            self.heartbeat.tick()
-            for lamp in self.lamps:
-                lamp.update()
-            gadget.poll()
-
     @staticmethod
     def is_circuitpy_mounted():
         return storage.getmount('/').readonly
+
+
+class Gadget:
+
+    def __init__(self, controller):
+        self.controller = controller
+
+    def init(self):
+        raise NotImplementedError
+
+    def poll(self):
+        raise NotImplementedError
+
+
+def gadget_main(sleep_secs, gadget_class, *gadget_args, **gadget_kwargs):
+    heartbeat = Heartbeat()
+    controller = Controller(heartbeat)
+    gadget = gadget_class(controller, *gadget_args, **gadget_kwargs)
+    gadget.init()
+    while True:
+        time.sleep(sleep_secs)
+        heartbeat.tick()
+        for lamp in controller.lamps:
+            lamp.update()
+        gadget.poll()

@@ -16,8 +16,8 @@ USB_DISK_SWITCH_PIN = board.D7
 
 def boot_main():
     switch = digitalio.DigitalInOut(USB_DISK_SWITCH_PIN)
-    switch.pull = digitalio.Pull.UP
-    if switch.value:
+    switch.pull = digitalio.Pull.DOWN
+    if not switch.value:
         storage.disable_usb_drive()
 
 
